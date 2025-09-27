@@ -1,0 +1,30 @@
+{
+  "name": "ai-powered-appointment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/app.js",
+    "build": "echo 'No build step required'",
+    "render-postbuild": "echo 'Post-build complete'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "chrono-node": "^2.9.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "luxon": "^3.7.2",
+    "multer": "^2.0.2",
+    "tesseract.js": "^6.0.1",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
