@@ -19,6 +19,7 @@ npm install
 ```bash
 # .env
 GOOGLE_GENAI_API_KEY=YOUR_API_KEY
+GEMINI_MODEL=gemini-1.5-flash-8b
 PORT=3000
 ```
 
