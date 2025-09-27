@@ -1,0 +1,150 @@
+const { DateTime } = require("luxon");
+const chrono = require("chrono-node");
+
+const DEPT_MAP = {
+  // Dental
+  dentist: "Dentistry",
+  dental: "Dentistry",
+  dentistry: "Dentistry",
+  "dental clinic": "Dentistry",
+  "dental care": "Dentistry",
+  "oral surgery": "Dentistry",
+  "root canal": "Dentistry",
+  tooth: "Dentistry",
+
+  // Medical Specialties
+  dermatology: "Dermatology",
+  "skin doctor": "Dermatology",
+  cardiology: "Cardiology",
+  "heart doctor": "Cardiology",
+  cardiac: "Cardiology",
+  eye: "Ophthalmology",
+  ophthalmology: "Ophthalmology",
+  "eye doctor": "Ophthalmology",
+  vision: "Ophthalmology",
+  orthopedics: "Orthopedics",
+  "bone doctor": "Orthopedics",
+  orthopedic: "Orthopedics",
+  general: "General Medicine",
+  "family doctor": "General Medicine",
+  "primary care": "General Medicine",
+  "internal medicine": "Internal Medicine",
+  pediatrics: "Pediatrics",
+  "child doctor": "Pediatrics",
+  gynecology: "Gynecology",
+  "women's health": "Gynecology",
+  neurology: "Neurology",
+  "brain doctor": "Neurology",
+  psychiatry: "Psychiatry",
+  "mental health": "Psychiatry",
+  psychology: "Psychology",
+  therapy: "Psychology",
+};
+
+function normalizeDepartment(deptRaw) {
+  if (!deptRaw) return { department_formal: null, dept_confidence: 0.0 };
+  const key = String(deptRaw).toLowerCase().trim();
+
+  // Direct mapping
+  let mapped = DEPT_MAP[key];
+
+  // Fuzzy matching for partial matches
+  if (!mapped) {
+    for (const [pattern, dept] of Object.entries(DEPT_MAP)) {
+      if (key.includes(pattern) || pattern.includes(key)) {
+        mapped = dept;
+        break;
+      }
+    }
+  }
+
+  // Fallback patterns
+  if (!mapped) {
+    if (key.includes("dent") || key.includes("tooth") || key.includes("oral")) {
+      mapped = "Dentistry";
+    } else if (key.includes("skin") || key.includes("derma")) {
+      mapped = "Dermatology";
+    } else if (key.includes("heart") || key.includes("cardio")) {
+      mapped = "Cardiology";
+    } else if (key.includes("eye") || key.includes("vision")) {
+      mapped = "Ophthalmology";
+    } else if (key.includes("bone") || key.includes("ortho")) {
+      mapped = "Orthopedics";
+    } else if (key.includes("child") || key.includes("pediatric")) {
+      mapped = "Pediatrics";
+    } else if (key.includes("women") || key.includes("gyne")) {
+      mapped = "Gynecology";
+    } else if (key.includes("brain") || key.includes("neuro")) {
+      mapped = "Neurology";
+    } else if (key.includes("mental") || key.includes("psych")) {
+      mapped = "Psychiatry";
+    } else if (
+      key.includes("general") ||
+      key.includes("family") ||
+      key.includes("primary")
+    ) {
+      mapped = "General Medicine";
+    }
+  }
+
+  return {
+    department_formal: mapped,
+    dept_confidence: mapped ? 0.9 : 0.4,
+  };
+}
+
+function normalizeDateTime(entities, tz) {
+  const nowTz = DateTime.now().setZone(tz);
+  const datePhrase = entities.date_phrase || "";
+  const timePhrase = entities.time_phrase || "";
+
+  const parsedDate = chrono.parseDate(datePhrase, {
+    instant: nowTz.toJSDate(),
+  });
+  const parsedTime = chrono.parseDate(timePhrase, {
+    instant: nowTz.toJSDate(),
+  });
+
+  if (!parsedDate || !parsedTime) {
+    return { status: "needs_clarification" };
+  }
+
+  let date = DateTime.fromJSDate(parsedDate, { zone: tz });
+  let time = DateTime.fromJSDate(parsedTime, { zone: tz });
+
+  date = date.set({
+    hour: time.hour,
+    minute: time.minute,
+    second: 0,
+    millisecond: 0,
+  });
+
+  return {
+    status: "ok",
+    date: date.toFormat("yyyy-LL-dd"),
+    time: date.toFormat("HH:mm"),
+  };
+}
+
+async function normalizeAppointment(entities, tz = "Asia/Kolkata") {
+  const deptNorm = normalizeDepartment(entities.department);
+  const dt = normalizeDateTime(entities, tz);
+  if (dt.status !== "ok" || !deptNorm.department_formal) {
+    return { status: "needs_clarification" };
+  }
+  return {
+    status: "ok",
+    normalized: {
+      department_formal: deptNorm.department_formal,
+      date: dt.date,
+      time: dt.time,
+      tz,
+    },
+    normalization_confidence: Math.min(
+      0.95,
+      0.8 + 0.1 * (deptNorm.dept_confidence >= 0.8 ? 1 : 0)
+    ),
+  };
+}
+
+module.exports = { normalizeAppointment };
