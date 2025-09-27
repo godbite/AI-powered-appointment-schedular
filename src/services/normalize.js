@@ -98,31 +98,38 @@ function normalizeDateTime(entities, tz) {
   const datePhrase = entities.date_phrase || "";
   const timePhrase = entities.time_phrase || "";
 
-  const parsedDate = chrono.parseDate(datePhrase, {
-    instant: nowTz.toJSDate(),
-  });
-  const parsedTime = chrono.parseDate(timePhrase, {
-    instant: nowTz.toJSDate(),
-  });
+  // Use chrono structured parsing to avoid timezone shifts
+  const dateResults = chrono.parse(datePhrase, nowTz.toJSDate());
+  const timeResults = chrono.parse(timePhrase, nowTz.toJSDate());
 
-  if (!parsedDate || !parsedTime) {
+  if (!dateResults.length || !timeResults.length) {
     return { status: "needs_clarification" };
   }
 
-  let date = DateTime.fromJSDate(parsedDate, { zone: tz });
-  let time = DateTime.fromJSDate(parsedTime, { zone: tz });
+  const dStart = dateResults[0].start; // ParsedComponents
+  const tStart = timeResults[0].start;
 
-  date = date.set({
-    hour: time.hour,
-    minute: time.minute,
+  const dateObj = {
+    year: dStart.get("year") ?? nowTz.year,
+    month: dStart.get("month") ?? nowTz.month,
+    day: dStart.get("day") ?? nowTz.day,
+  };
+  const timeObj = {
+    hour: tStart.get("hour") ?? 0,
+    minute: tStart.get("minute") ?? 0,
+  };
+
+  const dt = DateTime.fromObject({
+    ...dateObj,
+    ...timeObj,
     second: 0,
     millisecond: 0,
-  });
+  }, { zone: tz });
 
   return {
     status: "ok",
-    date: date.toFormat("yyyy-LL-dd"),
-    time: date.toFormat("HH:mm"),
+    date: dt.toFormat("yyyy-LL-dd"),
+    time: dt.toFormat("HH:mm"),
   };
 }
 
