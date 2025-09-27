@@ -2,6 +2,10 @@ AI-Powered Appointment Scheduler Assistant
 
 Backend service exposing `/schedule` to parse text or images into structured appointment JSON using Gemini (OCR + NLU) with guardrails and normalization to `Asia/Kolkata`.
 
+## System Architecture
+
+![System Architecture](./SYSTEM-ARCHITECHURE.png)
+
 Setup
 
 1. Install dependencies:
