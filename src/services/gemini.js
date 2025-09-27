@@ -24,7 +24,7 @@ function getGeminiClient() {
   return new GoogleGenerativeAI(apiKey);
 }
 
-function getModel(modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash") {
+function getModel(modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash") {
   const client = getGeminiClient();
   return client.getGenerativeModel({ model: modelName });
 }

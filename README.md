@@ -11,6 +11,7 @@ Backend service exposing `/schedule` to parse text or images into structured app
 Base URL: `https://ai-powered-appointment-schedular.onrender.com`
 
 - POST Schedule
+
   - URL: `https://ai-powered-appointment-schedular.onrender.com/schedule`
   - Description: Parses text or image and returns structured appointment JSON.
   - Request body keys:
@@ -30,6 +31,7 @@ Base URL: `https://ai-powered-appointment-schedular.onrender.com`
     ```
 
 - GET All Appointments
+
   - URL: `https://ai-powered-appointment-schedular.onrender.com/appointments`
   - Description: Returns an array of stored appointments.
   - Example:
@@ -45,7 +47,6 @@ Base URL: `https://ai-powered-appointment-schedular.onrender.com`
     curl https://ai-powered-appointment-schedular.onrender.com/appointments/<APPOINTMENT_ID>
     ```
 
-
 Setup
 
 1. Install dependencies:
@@ -59,7 +60,8 @@ npm install
 ```bash
 # .env
 GOOGLE_GENAI_API_KEY=YOUR_API_KEY
-GEMINI_MODEL=gemini-1.5-flash-8b
+
+
 PORT=3000
 ```
 
@@ -142,3 +144,44 @@ Notes
 - Requires Gemini API key in `GOOGLE_GENAI_API_KEY` (or `GEMINI_API_KEY`).
 - Uses `gemini-1.5-flash` for speed. You can switch the model in `src/services/gemini.js`.
 - Date/time normalization uses `chrono-node` and `luxon` in `Asia/Kolkata` timezone.
+
+## Hosted API Endpoints (Render)
+
+Base URL: `https://ai-powered-appointment-schedular.onrender.com`
+
+- POST Schedule
+
+  - URL: `https://ai-powered-appointment-schedular.onrender.com/schedule`
+  - Description: Parses text or image and returns structured appointment JSON.
+  - Request body keys:
+    - JSON: use key `text` (or `raw_text`) with your sentence.
+    - multipart/form-data: use file field key `image` to upload a photo/screenshot.
+  - Example:
+    ```bash
+    curl -X POST https://ai-powered-appointment-schedular.onrender.com/schedule \
+      -H 'Content-Type: application/json' \
+      -d '{"text":"Book me an appointment with the skin doctor on Monday at 4pm"}'
+    ```
+  - Image example:
+    ```bash
+    curl -X POST https://ai-powered-appointment-schedular.onrender.com/schedule \
+      -H 'Content-Type: multipart/form-data' \
+      -F image=@/path/to/your-note.jpg
+    ```
+
+- GET All Appointments
+
+  - URL: `https://ai-powered-appointment-schedular.onrender.com/appointments`
+  - Description: Returns an array of stored appointments.
+  - Example:
+    ```bash
+    curl https://ai-powered-appointment-schedular.onrender.com/appointments
+    ```
+
+- GET Appointment by ID
+  - URL: `https://ai-powered-appointment-schedular.onrender.com/appointments/:id`
+  - Description: Returns a single appointment by its ID.
+  - Example:
+    ```bash
+    curl https://ai-powered-appointment-schedular.onrender.com/appointments/<APPOINTMENT_ID>
+    ```

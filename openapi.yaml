@@ -1,0 +1,81 @@
+openapi: 3.0.3
+info:
+  title: AI-Powered Appointment Scheduler Assistant
+  version: 1.0.0
+  description: Minimal spec to test POST /schedule and GET /appointments.
+servers:
+  - url: http://localhost:3000
+    description: Local
+  - url: https://ai-powered-appointment-schedular.onrender.com
+    description: Render (prod)
+tags:
+  - name: Scheduling
+  - name: Appointments
+paths:
+  /schedule:
+    post:
+      tags: [Scheduling]
+      summary: Parse text or image into a structured appointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: User sentence to parse
+                raw_text:
+                  type: string
+                  description: Alternative to text
+            examples:
+              textExample:
+                value:
+                  text: Book me an appointment with the skin doctor on Monday at 4pm
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: Image file; field name must be 'image'
+            examples:
+              imageExample:
+                value:
+                  image: (binary file)
+      responses:
+        "200":
+          description: Stepwise result with final appointment or needs clarification
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  step1:
+                    type: object
+                  step2:
+                    type: object
+                  step3:
+                    type: object
+                  appointment:
+                    type: object
+  /appointments:
+    get:
+      tags: [Appointments]
+      summary: Get all appointments
+      responses:
+        "200":
+          description: List of appointments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  appointments:
+                    type: array
+                    items:
+                      type: object

@@ -6,7 +6,9 @@ function bufferToBase64WebSafe(buffer) {
 
 async function geminiOcr(imageBuffer, mimeType) {
   // Try multiple models to avoid version availability issues
-  const candidates = [process.env.GEMINI_MODEL];
+  const candidates = [
+    process.env.GEMINI_MODEL, // prefer env if valid
+  ];
 
   const prompt = `You are an OCR and image quality assistant for appointment requests. 
 Return strict JSON only with keys: raw_text (string), confidence (0-1 float), blur_detected (boolean), suggestion (string, optional). 
